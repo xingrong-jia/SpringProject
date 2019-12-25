@@ -34,7 +34,7 @@ public class AddressServiceImpl implements AddressService {
         AddressExample addressExample = new AddressExample();
         addressExample.setOrderByClause(laypage.getSort()+" "+laypage.getOrder());
         if (laypage.getName() != null) {
-            addressExample.createCriteria().andNameLike("%" + laypage.getUsername() + "%");
+            addressExample.createCriteria().andNameLike("%" + laypage.getName() + "%");
         }
         if (laypage.getUserId() != null) {
             addressExample.createCriteria().andUserIdEqualTo(laypage.getUserId());

@@ -148,6 +148,9 @@
       <include refid="Example_Where_Clause" />
     </if>
   </select>
+  <select id="selectRegions" resultMap="BaseResultMap">
+
+  </select>
   <update id="updateByExampleSelective" parameterType="map">
     update cskaoyan_mall_region
     <set>
@@ -208,4 +211,5 @@
       code = #{code,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
 </mapper>

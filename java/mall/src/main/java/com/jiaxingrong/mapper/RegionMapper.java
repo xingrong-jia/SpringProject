@@ -18,6 +18,8 @@ public interface RegionMapper {
 
     List<Region> selectByExample(RegionExample example);
 
+    List<Region> selectRegions();
+
     Region selectByPrimaryKey(Integer id);
 
     int updateByExampleSelective(@Param("record") Region record, @Param("example") RegionExample example);
