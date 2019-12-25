@@ -25,13 +25,15 @@ public class RegionServiceImpl implements RegionService {
         List<Region> regions = regionMapper.selectByExample(example);
         for (Region region : regions) {
             RegionExample example1 = new RegionExample();
-            example1.createCriteria().andCodeBetween(region.getCode()*100,region.getCode()*100+99);
-            example1.createCriteria().andTypeEqualTo((byte) 2);
+            RegionExample.Criteria criteria = example1.createCriteria();
+            criteria.andCodeBetween(region.getCode()*100,region.getCode()*100+99);
+            criteria.andTypeEqualTo((byte) 2);
             List<Region> regions1 = regionMapper.selectByExample(example1);
             for (Region region1 : regions1) {
                 RegionExample example2 = new RegionExample();
-                example2.createCriteria().andCodeBetween(region1.getCode()*100,region1.getCode()*100+99);
-                example2.createCriteria().andTypeEqualTo((byte) 3);
+                RegionExample.Criteria criteria1 = example2.createCriteria();
+                criteria1.andCodeBetween(region1.getCode()*100,region1.getCode()*100+99);
+                criteria1.andTypeEqualTo((byte) 3);
                 List<Region> regions2 = regionMapper.selectByExample(example2);
                 region1.setChildren(regions2);
             }

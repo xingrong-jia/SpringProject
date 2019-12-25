@@ -109,6 +109,9 @@
       )
   </insert>
   <insert id="insertSelective" parameterType="com.jiaxingrong.model.Issue">
+    <selectKey order="AFTER" keyColumn="newId" keyProperty="id" resultType="integer">
+      select LAST_INSERT_ID() as newId
+    </selectKey>
     insert into cskaoyan_mall_issue
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

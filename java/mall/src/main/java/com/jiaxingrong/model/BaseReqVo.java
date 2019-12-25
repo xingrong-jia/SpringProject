@@ -19,4 +19,9 @@ public class BaseReqVo<T> {
 
     public BaseReqVo() {
     }
+
+    public BaseReqVo(String errmsg, int errno) {
+        this.errmsg = errmsg;
+        this.errno = errno;
+    }
 }

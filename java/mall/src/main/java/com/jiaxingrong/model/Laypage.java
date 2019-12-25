@@ -2,6 +2,8 @@ package com.jiaxingrong.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Laypage {
     Integer page;
@@ -22,4 +24,13 @@ public class Laypage {
 
     //意见反馈的id
     Integer id;
+
+    List<Short> orderStatusArray;
+
+    //订单编号
+    Integer orderSn;
+
+    String question;
+
+    String url;
 }

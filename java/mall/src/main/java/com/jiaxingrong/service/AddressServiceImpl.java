@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.jiaxingrong.mapper.AddressMapper;
 import com.jiaxingrong.mapper.RegionMapper;
 import com.jiaxingrong.model.*;
+import com.jiaxingrong.utils.StringTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +34,14 @@ public class AddressServiceImpl implements AddressService {
         PageHelper.startPage(laypage.getPage(), laypage.getLimit());
         AddressExample addressExample = new AddressExample();
         addressExample.setOrderByClause(laypage.getSort()+" "+laypage.getOrder());
-        if (laypage.getName() != null) {
-            addressExample.createCriteria().andNameLike("%" + laypage.getName() + "%");
+        AddressExample.Criteria criteria = addressExample.createCriteria();
+        if (StringTool.isNotNull(laypage.getName())) {
+            criteria.andNameLike("%" + laypage.getName() + "%");
         }
         if (laypage.getUserId() != null) {
-            addressExample.createCriteria().andUserIdEqualTo(laypage.getUserId());
+            criteria.andUserIdEqualTo(laypage.getUserId());
         }
+        criteria.andDeletedEqualTo(false);
         List<Address> addresses = addressMapper.selectByExample(addressExample);
         for (Address address : addresses) {
             RegionExample regionExample = new RegionExample();

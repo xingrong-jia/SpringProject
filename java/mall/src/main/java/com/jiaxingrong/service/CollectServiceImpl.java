@@ -29,12 +29,14 @@ public class CollectServiceImpl implements CollectService {
         PageHelper.startPage(laypage.getPage(), laypage.getLimit());
         CollectExample collectExample = new CollectExample();
         collectExample.setOrderByClause(laypage.getSort()+" "+laypage.getOrder());
+        CollectExample.Criteria criteria = collectExample.createCriteria();
         if (laypage.getValueId() != null) {
-            collectExample.createCriteria().andValueIdEqualTo(laypage.getValueId());
+            criteria.andValueIdEqualTo(laypage.getValueId());
         }
         if (laypage.getUserId() != null) {
-            collectExample.createCriteria().andUserIdEqualTo(laypage.getUserId());
+            criteria.andUserIdEqualTo(laypage.getUserId());
         }
+        criteria.andDeletedEqualTo(false);
         List<Collect> collects = collectMapper.selectByExample(collectExample);
         PageInfo<Collect> addressPageInfo = new PageInfo<>(collects);
         long total = addressPageInfo.getTotal();

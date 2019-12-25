@@ -6,6 +6,7 @@ import com.jiaxingrong.mapper.UserMapper;
 import com.jiaxingrong.model.Laypage;
 import com.jiaxingrong.model.User;
 import com.jiaxingrong.model.UserExample;
+import com.jiaxingrong.utils.StringTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +30,14 @@ public class UserServiceImpl implements UserService {
         PageHelper.startPage(laypage.getPage(),laypage.getLimit());
         UserExample userExample = new UserExample();
         userExample.setOrderByClause(laypage.getSort()+" "+laypage.getOrder());
-        if (laypage.getUsername()!=null){
-            userExample.createCriteria().andUsernameLike("%"+laypage.getUsername()+"%");
+        UserExample.Criteria criteria = userExample.createCriteria();
+        if (StringTool.isNotNull(laypage.getUsername())){
+            criteria.andUsernameLike("%"+laypage.getUsername()+"%");
         }
-        if (laypage.getMobile()!=null){
-            userExample.createCriteria().andMobileLike("%"+laypage.getMobile()+"%");
+        if (StringTool.isNotNull(laypage.getMobile())){
+            criteria.andMobileLike("%"+laypage.getMobile()+"%");
         }
+        criteria.andDeletedEqualTo(false);
         List<User> users = userMapper.selectByExample(userExample);
         PageInfo<User> userPageInfo = new PageInfo<>(users);
         long total = userPageInfo.getTotal();

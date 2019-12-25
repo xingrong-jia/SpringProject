@@ -29,12 +29,14 @@ public class FootprintServiceImpl implements FootprintService {
         PageHelper.startPage(laypage.getPage(), laypage.getLimit());
         FootprintExample footprintExample = new FootprintExample();
         footprintExample.setOrderByClause(laypage.getSort()+" "+laypage.getOrder());
+        FootprintExample.Criteria criteria = footprintExample.createCriteria();
         if (laypage.getGoodsId() != null) {
-            footprintExample.createCriteria().andGoodsIdEqualTo(laypage.getGoodsId());
+            criteria.andGoodsIdEqualTo(laypage.getGoodsId());
         }
         if (laypage.getUserId() != null) {
-            footprintExample.createCriteria().andUserIdEqualTo(laypage.getUserId());
+            criteria.andUserIdEqualTo(laypage.getUserId());
         }
+        criteria.andDeletedEqualTo(false);
         List<Footprint> footprints = footprintMapper.selectByExample(footprintExample);
         PageInfo<Footprint> addressPageInfo = new PageInfo<>(footprints);
         long total = addressPageInfo.getTotal();

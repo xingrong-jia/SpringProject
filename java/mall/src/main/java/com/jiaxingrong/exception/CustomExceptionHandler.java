@@ -16,6 +16,13 @@ public class CustomExceptionHandler{
         baseReqVo.setErrno(500);
         baseReqVo.setErrmsg(e.getMessage());
         return baseReqVo;
-
     }
+
+/*    @ExceptionHandler(NumberFormatException.class)
+    public BaseReqVo numberFormatException(NumberFormatException e){
+        BaseReqVo<Object> baseReqVo = new BaseReqVo<>();
+        baseReqVo.setErrno(402);
+        baseReqVo.setErrmsg("参数值不对");
+        return baseReqVo;
+    }*/
 }

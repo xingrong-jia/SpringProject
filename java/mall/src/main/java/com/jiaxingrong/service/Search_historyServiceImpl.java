@@ -29,12 +29,14 @@ public class Search_historyServiceImpl implements Search_historyService {
         PageHelper.startPage(laypage.getPage(), laypage.getLimit());
         Search_historyExample search_historyExample = new Search_historyExample();
         search_historyExample.setOrderByClause(laypage.getSort() + " " + laypage.getOrder());
+        Search_historyExample.Criteria criteria = search_historyExample.createCriteria();
         if (laypage.getKeyword()!= null) {
-            search_historyExample.createCriteria().andKeywordLike("%" + laypage.getKeyword() + "%");
+            criteria.andKeywordLike("%" + laypage.getKeyword() + "%");
         }
         if (laypage.getUserId() != null) {
-            search_historyExample.createCriteria().andUserIdEqualTo(laypage.getUserId());
+            criteria.andUserIdEqualTo(laypage.getUserId());
         }
+        criteria.andDeletedEqualTo(false);
         List<Search_history> search_histories = search_historyMapper.selectByExample(search_historyExample);
         PageInfo<Search_history> search_historyPageInfo = new PageInfo<>(search_histories);
         long total = search_historyPageInfo.getTotal();

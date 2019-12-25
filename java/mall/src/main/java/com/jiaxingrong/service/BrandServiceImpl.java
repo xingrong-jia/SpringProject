@@ -4,13 +4,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.jiaxingrong.mapper.BrandMapper;
 import com.jiaxingrong.model.*;
+import com.jiaxingrong.utils.StringTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class BrandServiceImpl implements BrandService {
@@ -29,12 +27,14 @@ public class BrandServiceImpl implements BrandService {
         PageHelper.startPage(laypage.getPage(), laypage.getLimit());
         BrandExample brandExample = new BrandExample();
         brandExample.setOrderByClause(laypage.getSort()+" "+laypage.getOrder());
-        if (laypage.getName() != null) {
-            brandExample.createCriteria().andNameLike("%" + laypage.getName() + "%");
+        BrandExample.Criteria criteria = brandExample.createCriteria();
+        if (StringTool.isNotNull(laypage.getName())) {
+            criteria.andNameLike("%" + laypage.getName() + "%");
         }
         if (laypage.getId() != null) {
-            brandExample.createCriteria().andIdEqualTo(laypage.getId());
+            criteria.andIdEqualTo(laypage.getId());
         }
+        criteria.andDeletedEqualTo(false);
         List<Brand> brands = brandMapper.selectByExample(brandExample);
         PageInfo<Brand> addressPageInfo = new PageInfo<>(brands);
         long total = addressPageInfo.getTotal();
@@ -42,5 +42,44 @@ public class BrandServiceImpl implements BrandService {
         map.put("total", total);
         map.put("items", brands);
         return map;
+    }
+
+    /**
+     * 添加品牌商
+     * @param brand
+     * @return
+     */
+    @Override
+    public Brand addBrand(Brand brand) {
+        brand.setAddTime(new Date());
+        brand.setUpdateTime(new Date());
+        brand.setSortOrder((byte) 50);
+        brand.setDeleted(false);
+        brandMapper.insert(brand);
+        brand = brandMapper.selectByPrimaryKey(brand.getId());
+        return brand;
+    }
+
+    /**
+     * 更新品牌商信息
+     * @param brand
+     * @return
+     */
+    @Override
+    public int updateBrand(Brand brand) {
+        int update = brandMapper.updateByPrimaryKey(brand);
+        return update;
+    }
+
+    /**
+     * 删除品牌商 假删除 即将其deleteId变为true
+     * @param brand
+     * @return
+     */
+    @Override
+    public int deleteBrand(Brand brand) {
+        brand.setDeleted(true);
+        int update = brandMapper.updateByPrimaryKeySelective(brand);
+        return update;
     }
 }

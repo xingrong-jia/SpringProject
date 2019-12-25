@@ -104,6 +104,9 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.jiaxingrong.model.Keyword">
+    <selectKey order="AFTER" keyColumn="newId" keyProperty="id" resultType="integer">
+      select LAST_INSERT_ID() as newId
+    </selectKey>
     insert into cskaoyan_mall_keyword (id, keyword, url, 
       is_hot, is_default, sort_order, 
       add_time, update_time, deleted
@@ -114,6 +117,9 @@
       )
   </insert>
   <insert id="insertSelective" parameterType="com.jiaxingrong.model.Keyword">
+    <selectKey order="AFTER" keyColumn="newId" keyProperty="id" resultType="integer">
+      select LAST_INSERT_ID() as newId
+    </selectKey>
     insert into cskaoyan_mall_keyword
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
