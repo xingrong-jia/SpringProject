@@ -24,4 +24,6 @@ public interface GoodsService {
     Map wxList(Laypage laypage);
 
     Map detail(Integer id);
+
+    Map related(Integer id);
 }

@@ -13,4 +13,6 @@ public interface KeywordService {
     Keyword updateKeyword(Keyword keyword);
 
     Keyword deleteKeyword(Keyword keyword);
+
+    Map index();
 }

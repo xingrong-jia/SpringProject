@@ -69,7 +69,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, goods_id, attribute, value, add_time, update_time, deleted
+    id, goods_id, attribute, `value`, add_time, update_time, deleted
   </sql>
   <select id="selectByExample" parameterType="com.jiaxingrong.model.Goods_attributeExample" resultMap="BaseResultMap">
     select
@@ -103,7 +103,7 @@
   </delete>
   <insert id="insert" parameterType="com.jiaxingrong.model.Goods_attribute">
     insert into cskaoyan_mall_goods_attribute (id, goods_id, attribute, 
-      value, add_time, update_time, 
+      `value`, add_time, update_time,
       deleted)
     values (#{id,jdbcType=INTEGER}, #{goodsId,jdbcType=INTEGER}, #{attribute,jdbcType=VARCHAR}, 
       #{value,jdbcType=VARCHAR}, #{addTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
@@ -122,7 +122,7 @@
         attribute,
       </if>
       <if test="value != null">
-        value,
+        `value`,
       </if>
       <if test="addTime != null">
         add_time,
@@ -177,7 +177,7 @@
         attribute = #{record.attribute,jdbcType=VARCHAR},
       </if>
       <if test="record.value != null">
-        value = #{record.value,jdbcType=VARCHAR},
+        `value` = #{record.value,jdbcType=VARCHAR},
       </if>
       <if test="record.addTime != null">
         add_time = #{record.addTime,jdbcType=TIMESTAMP},
@@ -198,7 +198,7 @@
     set id = #{record.id,jdbcType=INTEGER},
       goods_id = #{record.goodsId,jdbcType=INTEGER},
       attribute = #{record.attribute,jdbcType=VARCHAR},
-      value = #{record.value,jdbcType=VARCHAR},
+      `value` = #{record.value,jdbcType=VARCHAR},
       add_time = #{record.addTime,jdbcType=TIMESTAMP},
       update_time = #{record.updateTime,jdbcType=TIMESTAMP},
       deleted = #{record.deleted,jdbcType=BIT}
@@ -216,7 +216,7 @@
         attribute = #{attribute,jdbcType=VARCHAR},
       </if>
       <if test="value != null">
-        value = #{value,jdbcType=VARCHAR},
+        `value` = #{value,jdbcType=VARCHAR},
       </if>
       <if test="addTime != null">
         add_time = #{addTime,jdbcType=TIMESTAMP},
@@ -234,7 +234,7 @@
     update cskaoyan_mall_goods_attribute
     set goods_id = #{goodsId,jdbcType=INTEGER},
       attribute = #{attribute,jdbcType=VARCHAR},
-      value = #{value,jdbcType=VARCHAR},
+      `value` = #{value,jdbcType=VARCHAR},
       add_time = #{addTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       deleted = #{deleted,jdbcType=BIT}

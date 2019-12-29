@@ -3,6 +3,7 @@ package com.jiaxingrong.service;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.jiaxingrong.mapper.KeywordMapper;
+import com.jiaxingrong.mapper.Search_historyMapper;
 import com.jiaxingrong.model.*;
 import com.jiaxingrong.utils.StringTool;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Autowired
     KeywordMapper keywordMapper;
+
+    @Autowired
+    Search_historyMapper search_historyMapper;
 
     @Override
     public Map<String, Object> list(Laypage laypage) {
@@ -64,5 +68,29 @@ public class KeywordServiceImpl implements KeywordService {
         keyword.setDeleted(true);
         keywordMapper.updateByPrimaryKeySelective(keyword);
         return keyword;
+    }
+
+    @Override
+    public Map index() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        KeywordExample keywordExample = new KeywordExample();
+        KeywordExample.Criteria criteria = keywordExample.createCriteria();
+        criteria.andDeletedEqualTo(false);
+        criteria.andIsDefaultEqualTo(true);
+        List<Keyword> keywords = keywordMapper.selectByExample(keywordExample);
+        map.put("defaultKeyword",keywords.get(0)!=null?keywords.get(0):null);
+        KeywordExample keywordExample1 = new KeywordExample();
+        KeywordExample.Criteria criteria1 = keywordExample.createCriteria();
+        criteria1.andDeletedEqualTo(false);
+        criteria1.andIsHotEqualTo(true);
+        map.put("hotKeywordList",keywordMapper.selectByExample(keywordExample1));
+
+        Search_historyExample search_historyExample = new Search_historyExample();
+        Search_historyExample.Criteria criteria2 = search_historyExample.createCriteria();
+        criteria2.andDeletedEqualTo(false);
+        List<Search_history> search_histories = search_historyMapper.selectByExample(search_historyExample);
+        map.put("historyKeywordList",search_histories);
+        return map;
     }
 }

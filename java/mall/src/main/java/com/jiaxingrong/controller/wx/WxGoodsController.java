@@ -40,6 +40,11 @@ public class WxGoodsController {
         return BaseReqVo.ok(goodsService.detail(id));
     }
 
+    @RequestMapping("related")
+    public BaseReqVo related(Integer id) {
+        return BaseReqVo.ok(goodsService.related(id));
+    }
+
 
 }
 

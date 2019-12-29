@@ -17,4 +17,8 @@ public interface CateGoryService {
     int deleteCateGory(CateGory cateGory);
 
     Map category(Integer id);
+
+    Map index();
+
+    Map current(Integer id);
 }

@@ -260,7 +260,7 @@ public class GoodsServiceImpl implements GoodsService {
         GoodsExample goodsExample = new GoodsExample();
         GoodsExample.Criteria criteria = goodsExample.createCriteria();
         criteria.andDeletedEqualTo(false);
-        criteria.andCategoryIdEqualTo(laypage.getCategoryId());
+        //criteria.andCategoryIdEqualTo(laypage.getCategoryId());
         List<Goods> goods = goodsMapper.selectByExample(goodsExample);
         PageInfo<Goods> goodsPageInfo = new PageInfo<>(goods);
         long total = goodsPageInfo.getTotal();
@@ -293,7 +293,9 @@ public class GoodsServiceImpl implements GoodsService {
         for (Goods_specification goods_specification : goods_specifications) {
             HashMap<String, Object> map1 = new HashMap<>();
             map1.put("name",goods_specification.getSpecification());
-            map1.put("valueList",goods_specification);
+            ArrayList<Goods_specification> list = new ArrayList<>();
+            list.add(goods_specification);
+            map1.put("valueList",list);
             maps.add(map1);
         }
         map.put("specificationList",maps);
@@ -337,7 +339,10 @@ public class GoodsServiceImpl implements GoodsService {
         List<Goods_attribute> goods_attributes = goods_attributeMapper.selectByExample(goods_attributeExample);
         map.put("attribute",goods_attributes);
 
-        map.put("brand",brandMapper.selectByPrimaryKey(goods.getBrandId()));
+        Brand brand = new Brand();
+        brand = brandMapper.selectByPrimaryKey(goods.getBrandId());
+
+        map.put("brand",brand==null?null:brand);
 
 
         Goods_productExample goods_productExample = new Goods_productExample();
@@ -347,6 +352,28 @@ public class GoodsServiceImpl implements GoodsService {
         List<Goods_product> goods_products = goods_productMapper.selectByExample(goods_productExample);
         map.put("productList",goods_products);
 
+        return map;
+    }
+
+    @Override
+    public Map related(Integer id) {
+        HashMap<String, List> map = new HashMap<>();
+        GoodsExample goodsExample = new GoodsExample();
+        GoodsExample.Criteria criteria = goodsExample.createCriteria();
+        criteria.andDeletedEqualTo(false);
+        List<Goods> goods = goodsMapper.selectByExample(goodsExample);
+        ArrayList<Object> list = new ArrayList<>();
+        while (list.size()<11){
+            int a = (int) Math.floor(Math.random()*goods.size());
+            if (!list.contains(a)){
+                list.add(a);
+                list.add(0,goods.get(a));
+            }
+        }
+        while (list.size()>6){
+            list.remove(list.size()-1);
+        }
+        map.put("goodsList",list);
         return map;
     }
 }

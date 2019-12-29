@@ -37,7 +37,9 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/admin/auth/login","anon");
         filterChainDefinitionMap.put("/wx/user/login","anon");
         filterChainDefinitionMap.put("/wx/home/index","anon");
+        filterChainDefinitionMap.put("/wx/catalog/**","anon");
         filterChainDefinitionMap.put("/wx/goods/**","anon");
+        filterChainDefinitionMap.put("/wx/search/**","anon");
         filterChainDefinitionMap.put("/wx/brand/detail","anon");
         filterChainDefinitionMap.put("/static/**", "anon");
         filterChainDefinitionMap.put("/Pic/**", "anon");
