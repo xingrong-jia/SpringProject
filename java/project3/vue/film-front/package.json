@@ -1,0 +1,58 @@
+{
+  "name": "meeting_film_front",
+  "version": "1.0.0",
+  "description": "Meeting_film前端应用程序",
+  "author": "jiangzh <jiangzh@sina.com>",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "precommit": "npm run lint"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.279.1",
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "child_process": "^1.0.2",
+    "cookie-session": "^2.0.0-beta.3",
+    "css-loader": "^0.28.11",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "js-cookie": "^2.2.0",
+    "jsonp": "^0.2.1",
+    "nuxt": "^1.0.0",
+    "postcss-loader": "^2.1.5",
+    "sass-loader": "^7.0.1",
+    "sass-resources-loader": "^1.3.3",
+    "style-loader": "^0.21.0",
+    "swiper": "^4.3.2",
+    "vee-validate": "^2.1.0-beta.8",
+    "vue-calendar-component": "^2.6.6",
+    "vue-jsonp": "^0.1.8"
+  },
+  "devDependencies": {
+    "@gauseen/nuxt-proxy": "^1.0.1",
+    "babel-eslint": "^8.2.1",
+    "coffee-loader": "^0.9.0",
+    "coffee-script": "^1.12.7",
+    "css-loader": "^0.28.11",
+    "eslint": "^4.15.0",
+    "eslint-friendly-formatter": "^3.0.0",
+    "eslint-loader": "^1.7.1",
+    "eslint-plugin-vue": "^4.0.0",
+    "node-sass": "^4.9.0",
+    "pug": "^2.0.0-beta6",
+    "pug-loader": "^2.4.0",
+    "style-loader": "^0.21.0",
+    "webpack-dev-server": "^2.9.7"
+  },
+  "config": {
+    "nuxt": {
+      "host": "0.0.0.0",
+      "port": "1818"
+    }
+  }
+}

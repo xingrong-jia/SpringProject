@@ -1,0 +1,10 @@
+创建该pic文件夹目录是为了映射本服务路径以外的微信支付二维码存储文件夹
+
+linux下执行命令:
+进入static目录下执行
+ln -s /project4/server/resources/pic pic
+
+
+/project4/server/resources/pic是二维码存储路径
+pic 在static下新创建文件夹
+order.vue中computed计算属性下有使用
