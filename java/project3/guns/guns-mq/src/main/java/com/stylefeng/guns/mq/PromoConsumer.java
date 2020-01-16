@@ -1,11 +1,13 @@
 package com.stylefeng.guns.mq;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.jiaxingrong.utils.FileUtils;
 import com.jiaxingrong.utils.JsonUtils;
 import com.stylefeng.guns.mq.vo.MQVo;
 import com.stylefeng.guns.order.OrderService;
 import com.stylefeng.guns.promo.PromoService;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -28,12 +30,20 @@ import java.util.List;
  * @PROJECT_NAME: guns
  * @date 2020-01-14 16:02
  */
+@Slf4j
 @Component
 public class PromoConsumer {
 
     private DefaultMQPushConsumer mysqlConsumer;
 
     private DefaultMQPushConsumer redisConsumer;
+
+    private DefaultMQPushConsumer orderConsumer;
+
+    private DefaultMQPushConsumer picConsumer;
+
+    @Value("${file.aliPayPic}")
+    private String aliPayPic ;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -63,14 +73,14 @@ public class PromoConsumer {
                 int i = mqVo.getAmount() * -1;
                 Integer amount = i;
 
-                System.out.println("redis消费者--->"+body);
+                log.info("redis消费者--->{}"+body);
                 redisTemplate.opsForValue().increment("proms"+promoId,amount);
 
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
         redisConsumer.start();
-        System.out.println("redis消费者启动成功！");
+        log.info("redis消费者启动成功");
     }
 
 
@@ -92,7 +102,8 @@ public class PromoConsumer {
                 Integer promoId = mqVo.getPromoId();
                 Integer amount = mqVo.getAmount() ;
                 Integer userId = mqVo.getUserId();
-                System.out.println("mysql消费者--->"+body);
+
+                log.info("mysql消费者--->{}"+body);
                 Integer integer = promoService.createPromoOrder(userId, promoId, amount);
                 amount = amount * -1;
                 int update = promoService.updatePromoStock(promoId,amount);
@@ -104,16 +115,16 @@ public class PromoConsumer {
             }
         });
         mysqlConsumer.start();
-        System.out.println("mysql消费者启动成功！");
+        log.info("mysql消费者启动成功");
     }
 
 
     @PostConstruct
     public void init3() throws MQClientException {
-        redisConsumer = new DefaultMQPushConsumer("consumer3");
-        redisConsumer.setNamesrvAddr(nameSevAddr);
-        redisConsumer.subscribe("order", "*");
-        redisConsumer.registerMessageListener(new MessageListenerConcurrently() {
+        orderConsumer = new DefaultMQPushConsumer("consumer4");
+        orderConsumer.setNamesrvAddr(nameSevAddr);
+        orderConsumer.subscribe("deletePic", "*");
+        orderConsumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
                 Message message = list.get(0);
@@ -123,12 +134,34 @@ public class PromoConsumer {
                 if (status == 0) {
                     Integer integer = orderService.updateOrderByorderId(orderId, 2);
                     if (integer !=1 ) return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-                    System.out.println("order消费者--->"+orderId);
+                    log.info("order消费者--->成功修改订单：{}"+orderId);
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
-        redisConsumer.start();
-        System.out.println("order消费者启动成功！");
+        orderConsumer.start();
+        log.info("order消费者启动成功");
+    }
+
+    @PostConstruct
+    public void init4() throws MQClientException {
+        picConsumer = new DefaultMQPushConsumer("consumer3");
+        picConsumer.setNamesrvAddr(nameSevAddr);
+        picConsumer.subscribe("order", "*");
+        picConsumer.registerMessageListener(new MessageListenerConcurrently() {
+            @Override
+            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
+                Message message = list.get(0);
+                String picAddress = new String(message.getBody());
+                boolean flag = FileUtils.deleteFile(aliPayPic+picAddress);
+                if (!flag) {
+                     return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                }
+                log.info("pic消费者删除图片--->成功删除图片：{}"+picAddress);
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            }
+        });
+        picConsumer.start();
+        System.out.println("pic消费者启动成功！");
     }
 }

@@ -40,7 +40,8 @@ spring:
       username: root
       password: jxr0406
       filters: log4j,wall,mergeStat
-
+file:
+  aliPayPicPrefix: D:\File\
 mq:
   nameSevAddr: 192.168.5.31:9876
 

@@ -1,5 +1,6 @@
 package com.stylefeng.guns.rest.alipay.demo.trade.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
@@ -7,6 +8,7 @@ import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.stylefeng.guns.alipay.AliPayService;
+import com.stylefeng.guns.mq.MqService;
 import com.stylefeng.guns.rest.alipay.demo.trade.Main;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,10 +28,14 @@ public class AliPayServiceImpl implements AliPayService {
     @Autowired
     AlipayClient alipayClient;
 
+    @Reference(interfaceClass = MqService.class,retries = 1)
+    private MqService mqService;
+
 
     @Override
     public String getPayQRCode(String orderId, String cinemaName, String price, String cinemaId) {
         String qrCodePath = main.getPayQRCode(orderId, cinemaName, price, cinemaId);
+        mqService.deleteAliPayPic(qrCodePath);
         return qrCodePath;
     }
 

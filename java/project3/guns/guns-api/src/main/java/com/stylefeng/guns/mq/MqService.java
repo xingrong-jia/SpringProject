@@ -12,4 +12,8 @@ public interface MqService {
     Boolean sendMysqlStock(Integer promoId, Integer amount, Integer userId);
 
     Boolean sendMysqlStockTransaction(Integer promoId, Integer amount, Integer userId);
+
+    Boolean deleteAliPayPic(String filePath);
+
+    Boolean updateOrderStatus(String orderId);
 }

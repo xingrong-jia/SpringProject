@@ -35,4 +35,14 @@ public class MqServiceImpl implements MqService {
         Boolean mysqlStock = promoProducer.sendMysqlStockTransaction(promoId, amount, userId);
         return mysqlStock;
     }
+
+    public Boolean deleteAliPayPic(String filePath){
+        Boolean deleteAliPayPic = promoProducer.deleteAliPayPic(filePath);
+        return deleteAliPayPic;
+    }
+
+    public Boolean updateOrderStatus(String orderId){
+        Boolean changeOrderStatus = promoProducer.changeOrderStatus(orderId);
+        return changeOrderStatus;
+    }
 }

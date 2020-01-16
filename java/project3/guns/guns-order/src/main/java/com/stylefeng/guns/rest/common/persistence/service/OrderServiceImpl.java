@@ -7,6 +7,7 @@ import com.jiaxingrong.utils.*;
 import com.stylefeng.guns.cinema.CinemaService;
 import com.stylefeng.guns.json.Seat;
 import com.stylefeng.guns.json.SingleEntity;
+import com.stylefeng.guns.mq.MqService;
 import com.stylefeng.guns.order.OrderService;
 import com.stylefeng.guns.order.vo.OrderField;
 import com.stylefeng.guns.order.vo.OrderReqVo;
@@ -41,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Reference(interfaceClass = CinemaService.class,retries = 1)
     private CinemaService cinemaService;
+
+    @Reference(interfaceClass = MqService.class)
+    private MqService mqService;
 
     @Override
     public OrderRespVo buyTickets(OrderReqVo orderReqVo, String seat_address, Integer userId, OrderField orderField, String filmName,String cinemaName) {
@@ -80,6 +84,7 @@ public class OrderServiceImpl implements OrderService {
         respVo.setSeatsName(seatsName);
         respVo.setOrderPrice(String.valueOf(orderT.getOrderPrice()));
         respVo.setOrderTimestamp(String.valueOf(System.currentTimeMillis()));
+        mqService.updateOrderStatus(orderId);
         return respVo;
     }
 
