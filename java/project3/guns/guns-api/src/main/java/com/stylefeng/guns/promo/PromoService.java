@@ -1,9 +1,11 @@
 package com.stylefeng.guns.promo;
 
 import com.stylefeng.guns.cinema.vo.CinemasReqVo;
+import com.stylefeng.guns.order.vo.OrderRespVo;
 import com.stylefeng.guns.promo.vo.PromoReqVo;
 import com.stylefeng.guns.promo.vo.PromoRespVo;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -24,4 +26,6 @@ public interface PromoService {
     Integer createPromoOrder(Integer userId, Integer promoId, Integer amount);
 
     Integer updatePromoStock(Integer promoId, Integer amount);
+
+    List<OrderRespVo> getOrderInfo(Integer userId, Integer nowPage, Integer pageSize);
 }

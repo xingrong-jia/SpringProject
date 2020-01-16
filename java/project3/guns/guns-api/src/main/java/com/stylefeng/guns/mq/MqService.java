@@ -10,4 +10,6 @@ public interface MqService {
     Boolean sendRedisStock(Integer promoId, Integer amount);
 
     Boolean sendMysqlStock(Integer promoId, Integer amount, Integer userId);
+
+    Boolean sendMysqlStockTransaction(Integer promoId, Integer amount, Integer userId);
 }

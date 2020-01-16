@@ -5,10 +5,11 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.jiaxingrong.utils.CollectionUtils;
+import com.jiaxingrong.utils.DateUtils;
 import com.jiaxingrong.utils.StringTool;
 import com.stylefeng.guns.cinema.CinemaService;
 import com.stylefeng.guns.cinema.vo.CinemasReqVo;
-import com.stylefeng.guns.mq.MqService;
+import com.stylefeng.guns.order.vo.OrderRespVo;
 import com.stylefeng.guns.promo.PromoService;
 import com.stylefeng.guns.promo.vo.PromoReqVo;
 import com.stylefeng.guns.promo.vo.PromoRespVo;
@@ -17,6 +18,7 @@ import com.stylefeng.guns.rest.common.persistence.dao.MtimePromoOrderMapper;
 import com.stylefeng.guns.rest.common.persistence.dao.MtimePromoStockMapper;
 import com.stylefeng.guns.rest.common.persistence.model.MtimePromo;
 import com.stylefeng.guns.rest.common.persistence.model.MtimePromoOrder;
+import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,7 +52,7 @@ public class PromoServiceImpl implements PromoService {
     private MtimePromoOrderMapper orderMapper;
 
 
-    @Reference(interfaceClass = CinemaService.class,retries = 1)
+    @Reference(interfaceClass = CinemaService.class, retries = 1)
     private CinemaService cinemaService;
 
     @Value("proms")
@@ -67,8 +69,7 @@ public class PromoServiceImpl implements PromoService {
     @Value("JXR")
     private String prefix;
 
-
-
+    private Boolean isSyncRedis;
 
 
     @Override
@@ -106,6 +107,7 @@ public class PromoServiceImpl implements PromoService {
 
     @Override
     public Integer publishPromoStock(Integer cinemaId) {
+        if (isSyncRedis!=null&&isSyncRedis) return 0;
         CinemasReqVo cinemasReqVo = new CinemasReqVo();
         if (cinemaId != null) {
             cinemasReqVo.setCinemaId(cinemaId);
@@ -113,10 +115,10 @@ public class PromoServiceImpl implements PromoService {
         List<PromoRespVo> promoRespVos = getPromos(cinemasReqVo);
         if (!CollectionUtils.isEmpty(promoRespVos)) {
             for (PromoRespVo promo : promoRespVos) {
-                redisTemplate.opsForValue().set(proms+promo.getUuid(),promo.getStock());
+                redisTemplate.opsForValue().set(proms + promo.getUuid(), promo.getStock());
             }
         }
-
+        isSyncRedis = true ;
         return 0;
     }
 
@@ -128,7 +130,7 @@ public class PromoServiceImpl implements PromoService {
             Integer integer = stockMapper.selectStockByPromoId(promoId);
             if (integer > 0) {
                 token = getToken(promoId, userId);
-                redisTemplate.opsForValue().set(generateToken+userId,token);
+                redisTemplate.opsForValue().set(generateToken + userId, token);
             }
         }
         return token;
@@ -148,7 +150,7 @@ public class PromoServiceImpl implements PromoService {
         Integer status = null;
         Integer promoId = reqVo.getPromoId();
         Integer amount = reqVo.getAmount();
-        if (amount<=0||amount > 10) return -4;
+        if (amount <= 0 || amount > 10) return -4;
 
         Integer stock = (Integer) redisTemplate.opsForValue().get(proms + promoId);
         if (stock == null) return -2;
@@ -164,7 +166,6 @@ public class PromoServiceImpl implements PromoService {
         return 1;
 
     }
-
 
 
     private String getToken(Integer promoId, Integer userId) {
@@ -187,14 +188,15 @@ public class PromoServiceImpl implements PromoService {
         promoOrder.setUserId(userId);
         promoOrder.setUuid(getOrderId(userId));
         promoOrder.setCinemaId(promo.getCinemaId());
-        String exchangeCode = getExchangeCode(userId,promoId,new Date());
+        String exchangeCode = getExchangeCode(userId, promoId, new Date());
         promoOrder.setExchangeCode(exchangeCode);
         promoOrder.setAmount(amount);
         BigDecimal decimal = BigDecimal.valueOf(amount * promo.getPrice().intValue());
         promoOrder.setPrice(decimal);
-        promoOrder.setStartTime(promo.getStartTime());
-        promoOrder.setCreateTime(new Date());
-        promoOrder.setEndTime(promo.getEndTime());
+        Date date = new Date();
+        promoOrder.setStartTime(date);
+        promoOrder.setCreateTime(date);
+        promoOrder.setEndTime(DateUtils.getNDayDate(7,date));
 
         Integer insert = orderMapper.insertPromoOrder(promoOrder);
 
@@ -220,23 +222,57 @@ public class PromoServiceImpl implements PromoService {
 
     @Override
     public Integer updatePromoStock(Integer promoId, Integer amount) {
-        Integer update = stockMapper.updateStockByPromoId(promoId,amount);
+        Integer update = stockMapper.updateStockByPromoId(promoId, amount);
 
         return update;
     }
 
+    @Override
+    public List<OrderRespVo> getOrderInfo(Integer userId, Integer nowPage, Integer pageSize) {
+        Wrapper<MtimePromoOrder> wrapper = new EntityWrapper<>();
+        wrapper.eq("user_id", userId);
+        RowBounds rowBounds = new RowBounds(nowPage - 1, pageSize);
+        List<MtimePromoOrder> orderTS = orderMapper.selectPage(rowBounds, wrapper);
+        List<OrderRespVo> respVos = new ArrayList<>();
+        for (MtimePromoOrder orderT : orderTS) {
+            OrderRespVo respVo = new OrderRespVo();
+            respVo.setOrderId(orderT.getUuid());
+            String cinemaName = cinemaService.queryCinemaNameByCinemaId(orderT.getCinemaId());
+            //OrderField orderField = cinemaService.queryFieldHallNameByFiledId(orderT.getFieldId());
+            //String filmName = cinemaService.queryFilmNameByFilmName(orderT.getFilmId());
+            respVo.setFilmName("兑换码：" + orderT.getExchangeCode());
+            respVo.setStartTime("兑换开始时间："+StringTool.date2StringBeHmS(orderT.getStartTime()));
+            respVo.setEndTime("------兑换截止时间："+StringTool.date2StringBeHmS(orderT.getEndTime()));
+            respVo.setCinemaName(cinemaName);
+            respVo.setSeatsName("");
+            respVo.setOrderPrice(String.valueOf(orderT.getPrice()));
+            respVo.setOrderTimestamp(StringTool.date2StringBeHmS(orderT.getCreateTime()));
+
+            respVo.setOrderStatus("已支付");
+            respVos.add(respVo);
+        }
+        return respVos;
+    }
+
     private String getExchangeCode(Integer userId, Integer promoId, Date date) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(prefix);
+        buffer.append(prefix);//3位
         String ctrl = StringTool.date2StringBeHmSNotCtrl(new Date());
-        if ("000000".equals(ctrl.substring(7))){
+        if ("000000".equals(ctrl.substring(7))) {
             suffix = 0000001;
         }
         buffer.append(ctrl);
         String hashRSA = StringTool.hashRSA(String.valueOf(userId));
         String hashRSA1 = StringTool.hashRSA(String.valueOf(promoId));
-        buffer.append(hashRSA.substring(hashRSA.length()-6));
-        buffer.append(hashRSA.substring(hashRSA1.length()-6));
+        buffer.append(hashRSA.substring(hashRSA.length() - 6));
+        buffer.append(hashRSA.substring(hashRSA1.length() - 6));
+        if (suffix < 1000000) {
+            String valueOf = String.valueOf(suffix);
+            int length = 7 - valueOf.length();
+            for (int i = 0; i < length; i++) {
+                buffer.append(0);
+            }
+        }
         buffer.append(suffix++);
         return buffer.toString();
     }

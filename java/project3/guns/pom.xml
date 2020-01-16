@@ -4,6 +4,16 @@
     <groupId>com.stylefeng</groupId>
     <artifactId>guns-parent</artifactId>
     <version>1.0.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>com.stylefeng</groupId>
+            <artifactId>guns-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
 
     <name>guns-parent</name>
     <packaging>pom</packaging>

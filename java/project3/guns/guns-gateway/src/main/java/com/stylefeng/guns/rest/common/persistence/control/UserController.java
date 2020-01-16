@@ -29,7 +29,7 @@ import java.util.Map;
 @RequestMapping("user")
 public class UserController {
 
-    @Reference(interfaceClass = UserService.class,retries = 1)
+    @Reference(interfaceClass = UserService.class, retries = 1)
     private UserService userService;
 
     @Autowired
@@ -94,9 +94,9 @@ public class UserController {
                 authToken = header.substring(7);
                 String username = jwtTokenUtil.getUsernameFromToken(authToken);
                 UserInfoVo userInfoVo = userService.getUserInfo(username);
-                if (userInfoVo != null) return Result.ok(userInfoVo);
-                else return Result.failure();
-
+                if (userInfoVo != null) {
+                    return Result.ok(userInfoVo);
+                } else return Result.failure();
             }
         }
         return new Result(700, "查询失败，用户尚未登陆");
@@ -105,9 +105,9 @@ public class UserController {
     @RequestMapping("updateUserInfo")
     public Result updateUserInfo(UserInfoVo userInfoVo) {
         int modifyUser = userService.modifyUserInformation(userInfoVo);
-        if (modifyUser == 1) return Result.ok(userInfoVo);
+        if (modifyUser == 1) return Result.ok("修改资料成功！", userInfoVo);
         else if (modifyUser == 0) return new Result(1, "用户信息修改失败!");
-        else return new Result(999, "系统出现异常，请联系管理员!");
+        else return Result.failure();
     }
 
 }

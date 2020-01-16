@@ -12,6 +12,7 @@ import com.stylefeng.guns.rest.modular.auth.util.JwtTokenUtil;
 import com.stylefeng.guns.user.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,7 +71,9 @@ public class PromoController {
     }
 
     @RequestMapping("createOrder")
-    public Result createOrder(PromoReqVo reqVo, @RequestHeader String Authorization) {
+    public Result createOrder(PromoReqVo reqVo, @RequestHeader String Authorization) throws InterruptedException {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         String loginToken = Authorization.substring(7);
         String username = jwtTokenUtil.getUsernameFromToken(loginToken);
         Integer userId = userService.queryUserId(username);
@@ -84,16 +87,21 @@ public class PromoController {
         if (status == 1){
             Integer amount = reqVo.getAmount();
             Integer promoId = reqVo.getPromoId();
-            Boolean redisStock = mqService.sendRedisStock(promoId, amount);
+/*            Boolean redisStock = mqService.sendRedisStock(promoId, amount);
             if (redisStock){
                 log.info("redis-->活动Id:"+promoId+":售出"+amount);
-            }
+            }*/
 
-            Boolean mysqlStock = mqService.sendMysqlStock(promoId, amount, userId);
+            //Boolean mysqlStock = mqService.sendMysqlStock(promoId, amount, userId);
+            Boolean mysqlStock = mqService.sendMysqlStockTransaction(promoId, amount, userId);
             if (mysqlStock){
                 log.info("mysql-->活动Id:"+promoId+",售出:"+amount+",下单用户id："+userId);
             }
         }
+        //Thread.sleep(10);
+        stopWatch.stop();
+
+        log.info("秒杀下单接口请求耗时 -> {} ms",stopWatch.getTotalTimeMillis());
         return Result.ok("下单成功！");
     }
 

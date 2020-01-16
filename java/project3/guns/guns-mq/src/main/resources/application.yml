@@ -41,6 +41,9 @@ spring:
       password: jxr0406
       filters: log4j,wall,mergeStat
 
+mq:
+  nameSevAddr: 192.168.5.31:9876
+
 logging:
   level.root: info
   level.com.stylefeng: debug

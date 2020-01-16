@@ -29,4 +29,10 @@ public class MqServiceImpl implements MqService {
         Boolean mysqlStock = promoProducer.sendMysqlStock(promoId, amount, userId);
         return mysqlStock;
     }
+
+    @Override
+    public Boolean sendMysqlStockTransaction(Integer promoId, Integer amount, Integer userId) {
+        Boolean mysqlStock = promoProducer.sendMysqlStockTransaction(promoId, amount, userId);
+        return mysqlStock;
+    }
 }

@@ -19,6 +19,10 @@ public class OrderRespVo implements Serializable {
 
     private String fieldTime;
 
+    private String startTime;
+
+    private String endTime;
+
     private String cinemaName;
 
     private String seatsName;

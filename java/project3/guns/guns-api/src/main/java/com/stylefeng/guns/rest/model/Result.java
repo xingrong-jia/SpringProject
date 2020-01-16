@@ -50,8 +50,8 @@ public class Result<T> {
         return new Result(0, o,imgPre);
     }
 
-    public static Result ok(String imgPre, Object o) {
-        return new Result(0, o, imgPre);
+    public static Result ok(String msg, Object o) {
+        return new Result(0,msg, o);
     }
 
 

@@ -8,6 +8,7 @@ import com.stylefeng.guns.order.OrderService;
 import com.stylefeng.guns.order.vo.OrderField;
 import com.stylefeng.guns.order.vo.OrderReqVo;
 import com.stylefeng.guns.order.vo.OrderRespVo;
+import com.stylefeng.guns.promo.PromoService;
 import com.stylefeng.guns.rest.model.Result;
 import com.stylefeng.guns.rest.modular.auth.util.JwtTokenUtil;
 import com.stylefeng.guns.user.UserService;
@@ -41,6 +42,9 @@ public class OrderController {
     @Reference(interfaceClass = FilmService.class,retries = 1)
     private FilmService filmService;
 
+    @Reference(interfaceClass = PromoService.class,retries = 1)
+    private PromoService promoService;
+
     @Autowired
     JwtTokenUtil jwtTokenUtil;
 
@@ -68,6 +72,7 @@ public class OrderController {
         String username = jwtTokenUtil.getUsernameFromToken(Authorization.substring(7));
         Integer userId = userService.queryUserId(username);
         List<OrderRespVo> respVos = orderService.getOrderInfo(userId,nowPage,pageSize);
+        respVos.addAll(promoService.getOrderInfo(userId,nowPage,pageSize));
         if (respVos==null) return Result.failure();
         if (respVos.size()==0) return Result.statusIsOne("订单列表为空哦！~");
         return Result.ok(respVos);
