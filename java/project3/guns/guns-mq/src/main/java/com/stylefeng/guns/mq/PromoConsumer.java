@@ -3,6 +3,7 @@ package com.stylefeng.guns.mq;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.jiaxingrong.utils.JsonUtils;
 import com.stylefeng.guns.mq.vo.MQVo;
+import com.stylefeng.guns.order.OrderService;
 import com.stylefeng.guns.promo.PromoService;
 import lombok.SneakyThrows;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -13,6 +14,7 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -40,11 +42,16 @@ public class PromoConsumer {
     @Reference(interfaceClass = PromoService.class,retries = 1)
     private PromoService promoService;
 
+     @Reference(interfaceClass = OrderService.class,retries = 1)
+    private OrderService orderService;
+
+    @Value("${mq.nameSevAddr}")
+    private String nameSevAddr;
 
     @PostConstruct
     public void init1() throws MQClientException {
         redisConsumer = new DefaultMQPushConsumer("consumer1");
-        redisConsumer.setNamesrvAddr("192.168.5.31:9876");
+        redisConsumer.setNamesrvAddr(nameSevAddr);
         redisConsumer.subscribe("redis", "*");
         redisConsumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
@@ -70,7 +77,7 @@ public class PromoConsumer {
     @PostConstruct
     public void init2() throws MQClientException {
         mysqlConsumer = new DefaultMQPushConsumer("consumer2");
-        mysqlConsumer.setNamesrvAddr("192.168.5.31:9876");
+        mysqlConsumer.setNamesrvAddr(nameSevAddr);
         mysqlConsumer.subscribe("mysql", "*");
         mysqlConsumer.registerMessageListener(new MessageListenerConcurrently() {
 
@@ -100,4 +107,28 @@ public class PromoConsumer {
         System.out.println("mysql消费者启动成功！");
     }
 
+
+    @PostConstruct
+    public void init3() throws MQClientException {
+        redisConsumer = new DefaultMQPushConsumer("consumer3");
+        redisConsumer.setNamesrvAddr(nameSevAddr);
+        redisConsumer.subscribe("order", "*");
+        redisConsumer.registerMessageListener(new MessageListenerConcurrently() {
+            @Override
+            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
+                Message message = list.get(0);
+                String orderId = new String(message.getBody());
+                Integer status = orderService.queryStatusByOrderId(orderId);
+
+                if (status == 0) {
+                    Integer integer = orderService.updateOrderByorderId(orderId, 2);
+                    if (integer !=1 ) return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                    System.out.println("order消费者--->"+orderId);
+                }
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            }
+        });
+        redisConsumer.start();
+        System.out.println("order消费者启动成功！");
+    }
 }

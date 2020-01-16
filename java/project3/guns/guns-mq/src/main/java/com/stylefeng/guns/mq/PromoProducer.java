@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 /**
  * @author Xingrong.Jia
@@ -98,6 +99,19 @@ public class PromoProducer {
         MQVo mqVo = new MQVo(promoId, amount);
         String toJson = JsonUtils.convertToJson(mqVo);
         Message message = new Message("redis", toJson.getBytes(Charset.forName("utf-8")));
+        SendResult send = defaultMQProducer.send(message);
+        SendStatus sendStatus = send.getSendStatus();
+        if (SendStatus.SEND_OK.equals(sendStatus)) {
+            return true;
+        }
+        return false;
+    }
+
+    @SneakyThrows
+    public Boolean changeOrderStatus(String orderId) {
+
+
+        Message message = new Message("order", orderId.getBytes(Charset.forName("utf-8")));
         SendResult send = defaultMQProducer.send(message);
         SendStatus sendStatus = send.getSendStatus();
         if (SendStatus.SEND_OK.equals(sendStatus)) {

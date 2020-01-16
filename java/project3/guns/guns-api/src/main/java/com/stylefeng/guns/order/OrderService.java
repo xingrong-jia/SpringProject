@@ -27,4 +27,6 @@ public interface OrderService {
     Integer updateOrderByorderId(String orderId, Integer payResult);
 
     String getOrderSeats(Integer fieldId);
+
+    Integer queryStatusByOrderId(String orderId);
 }

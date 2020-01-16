@@ -234,6 +234,12 @@ public class OrderServiceImpl implements OrderService {
         return sb.toString();
     }
 
+    @Override
+    public Integer queryStatusByOrderId(String orderId) {
+        MoocOrderT moocOrderT = orderTMapper.selectById(orderId);
+        return moocOrderT.getOrderStatus();
+    }
+
 
     private String getOrderId(Integer userId) {
         StringBuffer stringBuffer = new StringBuffer();
