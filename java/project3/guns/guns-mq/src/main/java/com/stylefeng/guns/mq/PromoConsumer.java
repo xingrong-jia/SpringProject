@@ -42,7 +42,7 @@ public class PromoConsumer {
 
     private DefaultMQPushConsumer picConsumer;
 
-    @Value("${file.aliPayPic}")
+    @Value("${file.aliPayPicPrefix}")
     private String aliPayPic ;
 
     @Autowired
@@ -73,7 +73,7 @@ public class PromoConsumer {
                 int i = mqVo.getAmount() * -1;
                 Integer amount = i;
 
-                log.info("redis消费者--->{}"+body);
+                log.info("redis消费者--->{}",body);
                 redisTemplate.opsForValue().increment("proms"+promoId,amount);
 
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -123,7 +123,7 @@ public class PromoConsumer {
     public void init3() throws MQClientException {
         orderConsumer = new DefaultMQPushConsumer("consumer4");
         orderConsumer.setNamesrvAddr(nameSevAddr);
-        orderConsumer.subscribe("deletePic", "*");
+        orderConsumer.subscribe("order", "*");
         orderConsumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
@@ -134,7 +134,7 @@ public class PromoConsumer {
                 if (status == 0) {
                     Integer integer = orderService.updateOrderByorderId(orderId, 2);
                     if (integer !=1 ) return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-                    log.info("order消费者--->成功修改订单：{}"+orderId);
+                    log.info("order消费者--->成功修改订单：{}",orderId);
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
@@ -147,7 +147,7 @@ public class PromoConsumer {
     public void init4() throws MQClientException {
         picConsumer = new DefaultMQPushConsumer("consumer3");
         picConsumer.setNamesrvAddr(nameSevAddr);
-        picConsumer.subscribe("order", "*");
+        picConsumer.subscribe("deletePic", "*");
         picConsumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
@@ -157,11 +157,10 @@ public class PromoConsumer {
                 if (!flag) {
                      return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
-                log.info("pic消费者删除图片--->成功删除图片：{}"+picAddress);
+                log.info("pic消费者删除图片--->成功删除图片：{}",picAddress);
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
         picConsumer.start();
-        System.out.println("pic消费者启动成功！");
     }
 }

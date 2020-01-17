@@ -112,7 +112,8 @@ public class PromoProducer {
 
 
         Message message = new Message("order", orderId.getBytes(Charset.forName("utf-8")));
-        SendResult send = defaultMQProducer.send(message,16);
+        message.setDelayTimeLevel(16);
+        SendResult send = defaultMQProducer.send(message);
         SendStatus sendStatus = send.getSendStatus();
         if (SendStatus.SEND_OK.equals(sendStatus)) {
             return true;
@@ -124,7 +125,8 @@ public class PromoProducer {
     public Boolean deleteAliPayPic(String picAddress) {
 
         Message message = new Message("deletePic", picAddress.getBytes(Charset.forName("utf-8")));
-        SendResult send = defaultMQProducer.send(message,12);
+        message.setDelayTimeLevel(12);
+        SendResult send = defaultMQProducer.send(message);
         SendStatus sendStatus = send.getSendStatus();
         if (SendStatus.SEND_OK.equals(sendStatus)) {
             return true;

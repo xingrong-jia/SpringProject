@@ -43,8 +43,6 @@ public class OrderServiceImpl implements OrderService {
     @Reference(interfaceClass = CinemaService.class,retries = 1)
     private CinemaService cinemaService;
 
-    @Reference(interfaceClass = MqService.class)
-    private MqService mqService;
 
     @Override
     public OrderRespVo buyTickets(OrderReqVo orderReqVo, String seat_address, Integer userId, OrderField orderField, String filmName,String cinemaName) {
@@ -84,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
         respVo.setSeatsName(seatsName);
         respVo.setOrderPrice(String.valueOf(orderT.getOrderPrice()));
         respVo.setOrderTimestamp(String.valueOf(System.currentTimeMillis()));
-        mqService.updateOrderStatus(orderId);
+
         return respVo;
     }
 

@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.jiaxingrong.utils.StringTool;
 import com.stylefeng.guns.cinema.CinemaService;
 import com.stylefeng.guns.film.FilmService;
+import com.stylefeng.guns.mq.MqService;
 import com.stylefeng.guns.order.OrderService;
 import com.stylefeng.guns.order.vo.OrderField;
 import com.stylefeng.guns.order.vo.OrderReqVo;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -45,6 +45,9 @@ public class OrderController {
     @Reference(interfaceClass = PromoService.class,retries = 1)
     private PromoService promoService;
 
+    @Reference(interfaceClass = MqService.class)
+    private MqService mqService;
+
     @Autowired
     JwtTokenUtil jwtTokenUtil;
 
@@ -64,6 +67,7 @@ public class OrderController {
 
         if (orderRespVo==null) return Result.failure();
         if (!StringTool.isNotNull(orderRespVo.getOrderId())) return Result.statusIsOne("该订单不存在!");
+        mqService.updateOrderStatus(orderRespVo.getOrderId());
         return Result.ok(orderRespVo);
     }
 

@@ -64,6 +64,9 @@ public class PromoServiceImpl implements PromoService {
     @Value("genToken")
     private String generateToken;
 
+    @Value("promoCount")
+    private String promoCount;
+
     private Integer suffix = 0000001;
 
     @Value("JXR")
@@ -107,7 +110,7 @@ public class PromoServiceImpl implements PromoService {
 
     @Override
     public Integer publishPromoStock(Integer cinemaId) {
-        if (isSyncRedis!=null&&isSyncRedis) return 0;
+        if (isSyncRedis != null && isSyncRedis) return 0;
         CinemasReqVo cinemasReqVo = new CinemasReqVo();
         if (cinemaId != null) {
             cinemasReqVo.setCinemaId(cinemaId);
@@ -116,9 +119,11 @@ public class PromoServiceImpl implements PromoService {
         if (!CollectionUtils.isEmpty(promoRespVos)) {
             for (PromoRespVo promo : promoRespVos) {
                 redisTemplate.opsForValue().set(proms + promo.getUuid(), promo.getStock());
+                int v = (int) (promo.getStock() * 1.5);
+                redisTemplate.opsForValue().set(promoCount+promo.getUuid(),v);
             }
         }
-        isSyncRedis = true ;
+        isSyncRedis = true;
         return 0;
     }
 
@@ -128,9 +133,14 @@ public class PromoServiceImpl implements PromoService {
         MtimePromo promo = promoMapper.selectById(promoId);
         if (promo.getStatus() == 1) {
             Integer integer = stockMapper.selectStockByPromoId(promoId);
+            String promoCountId = String.valueOf(redisTemplate.opsForValue().get(promoCount + promoId));
+            if (!StringTool.isNumber(promoCountId)||Integer.parseInt(promoCountId) <= 0) return token;
+            Object o = redisTemplate.opsForValue().get(generateToken + userId + promoId);
+            if (o != null) return token;
             if (integer > 0) {
                 token = getToken(promoId, userId);
-                redisTemplate.opsForValue().set(generateToken + userId, token);
+                redisTemplate.opsForValue().set(generateToken + userId + promoId, token);
+                redisTemplate.opsForValue().increment(promoCount + promoId,-1);
             }
         }
         return token;
@@ -157,10 +167,11 @@ public class PromoServiceImpl implements PromoService {
 
         if (stock < amount) return -3;
         Integer userId = reqVo.getUserId();
-        /*String token = (String) redisTemplate.boundHashOps(generateToken).get(userId);
+        String token = (String) redisTemplate.opsForValue().get(generateToken + userId + promoId);
         if (!StringTool.isNotNull(token) || !token.equals(reqVo.getPromoToken())) {
             return -1;
-        }*/
+        }
+        redisTemplate.delete(generateToken + userId + promoId);
         //redisTemplate.boundHashOps(generateToken).delete(userId);
 
         return 1;
@@ -196,7 +207,7 @@ public class PromoServiceImpl implements PromoService {
         Date date = new Date();
         promoOrder.setStartTime(date);
         promoOrder.setCreateTime(date);
-        promoOrder.setEndTime(DateUtils.getNDayDate(7,date));
+        promoOrder.setEndTime(DateUtils.getNDayDate(7, date));
 
         Integer insert = orderMapper.insertPromoOrder(promoOrder);
 
@@ -241,8 +252,8 @@ public class PromoServiceImpl implements PromoService {
             //OrderField orderField = cinemaService.queryFieldHallNameByFiledId(orderT.getFieldId());
             //String filmName = cinemaService.queryFilmNameByFilmName(orderT.getFilmId());
             respVo.setFilmName("兑换码：" + orderT.getExchangeCode());
-            respVo.setStartTime("兑换开始时间："+StringTool.date2StringBeHmS(orderT.getStartTime()));
-            respVo.setEndTime("------兑换截止时间："+StringTool.date2StringBeHmS(orderT.getEndTime()));
+            respVo.setStartTime("兑换开始时间：" + StringTool.date2StringBeHmS(orderT.getStartTime()));
+            respVo.setEndTime("------兑换截止时间：" + StringTool.date2StringBeHmS(orderT.getEndTime()));
             respVo.setCinemaName(cinemaName);
             respVo.setSeatsName("");
             respVo.setOrderPrice(String.valueOf(orderT.getPrice()));

@@ -42,9 +42,6 @@ public class PayController {
         }
         PayRespVo respVo = payService.getPayResult(orderId);
         if (respVo==null) return Result.failure();
-        if (tryNums==3&&respVo.getOrderStatus()!=1){
-            payService.updateOrderStatus(orderId,2);
-        }
         return Result.ok(respVo);
     }
 
