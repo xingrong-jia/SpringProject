@@ -4,13 +4,16 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.jiaxingrong.utils.CollectionUtils;
+import com.jiaxingrong.utils.JsonUtils;
 import com.jiaxingrong.utils.StringTool;
 import com.stylefeng.guns.film.FilmService;
 import com.stylefeng.guns.film.vo.*;
 import com.stylefeng.guns.rest.common.persistence.dao.*;
 import com.stylefeng.guns.rest.common.persistence.model.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -24,6 +27,7 @@ import java.util.Map;
  * @PROJECT_NAME: guns
  * @date 2020-01-08 21:13
  */
+@Slf4j
 @Component
 @Service(interfaceClass = FilmService.class,retries = 1)
 public class FilmServiceImpl implements FilmService {
@@ -52,11 +56,37 @@ public class FilmServiceImpl implements FilmService {
     @Autowired
     MtimeActorTMapper actorMapper;
 
-    @Override
-    public Map getIndex() {
+    @Autowired
+    GuavaCacheService cacheService;
 
+    @Autowired
+    RedisTemplate redisTemplate;
+
+    private static final String GET_INDEX = "get_index";
+
+    @Override
+    public  Map getIndex() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("imgPre", "http://img.meetingshop.cn/");
+        String s = (String) cacheService.get(GET_INDEX);
+        if (s!=null) {
+            log.info("从本地缓存中读取数据");
+            FilmRespInfo filmRespInfo = JsonUtils.convertToObject(s, FilmRespInfo.class);
+            map.put("data", filmRespInfo);
+            return map;
+        }
+
+        log.info("本地缓存无数据");
+        String reidsData = (String) redisTemplate.opsForValue().get(GET_INDEX);
+        if (reidsData!=null){
+            log.info("从redis缓存中读取数据");
+            FilmRespInfo filmRespInfo = JsonUtils.convertToObject(reidsData, FilmRespInfo.class);
+            map.put("data", filmRespInfo);
+            cacheService.set(GET_INDEX,reidsData);
+            log.info("本地缓存写入数据成功");
+            return map;
+        }
+        log.info("redis缓存无数据");
         FilmRespInfo filmRespInfo = new FilmRespInfo();
 
         ArrayList<BannerVo> bannerVos = getBanners();
@@ -78,6 +108,11 @@ public class FilmServiceImpl implements FilmService {
         filmRespInfo.setTop100(top100);
 
         map.put("data", filmRespInfo);
+        String toJson = JsonUtils.convertToJson(filmRespInfo);
+        redisTemplate.opsForValue().set(GET_INDEX,toJson,30);
+        log.info("本地缓存写入数据成功");
+        cacheService.set(GET_INDEX,toJson);
+        log.info("redis缓存写入数据成功");
         return map;
     }
 
