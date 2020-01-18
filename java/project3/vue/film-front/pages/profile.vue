@@ -170,6 +170,7 @@
             updateUserInfo () {
                 let params = this.form, _this = this;
                 getData(process.env.baseUrl + '/user/updateUserInfo', 'post', params).then(res => {
+                    alert(res.msg)
                     if (res && _data) {
                         let _data = res.data;
                         if (_data.message) {

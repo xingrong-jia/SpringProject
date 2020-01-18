@@ -40,6 +40,8 @@
                                 <!--</span>-->
                             </div>
                             <div class="show-time">{{item.fieldTime}}</div>
+                            <div class="show-time">{{item.startTime}}{{item.endTime}}</div>
+                            <!--<div class="show-time"></div>-->
                         </div>
 
                         <div class="order-price">￥{{item.orderPrice}}</div>
@@ -276,7 +278,8 @@
                         /*}*/
                     }
                     .order-content {
-                        width: 49%;
+                        width: 55%;
+                        /*width: 49%;*/
                         .movie-name {
                             font-size: 16px;
                             font-weight: 700;
@@ -287,10 +290,12 @@
                             font-size: 12px;
                             color: #999;
                             margin-bottom: 4px;
+
                         }
                         .show-time {
                             font-size: 12px;
                             color: #ff6637;
+                            margin-bottom: 4px;
                         }
                     }
 
