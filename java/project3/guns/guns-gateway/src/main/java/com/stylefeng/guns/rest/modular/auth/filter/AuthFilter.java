@@ -46,7 +46,7 @@ public class AuthFilter extends OncePerRequestFilter {
     private List<String> urlList ;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {

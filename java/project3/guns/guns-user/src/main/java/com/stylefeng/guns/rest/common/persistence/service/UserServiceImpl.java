@@ -114,4 +114,10 @@ public class UserServiceImpl implements UserService {
         Integer uuid = userTMapper.selectUuidByUserName(username);
         return uuid;
     }
+
+    @Override
+    public String queryUserPhoneByUserId(Integer userId) {
+        MtimeUserT userT = userTMapper.selectById(userId);
+        return userT.getUserPhone();
+    }
 }

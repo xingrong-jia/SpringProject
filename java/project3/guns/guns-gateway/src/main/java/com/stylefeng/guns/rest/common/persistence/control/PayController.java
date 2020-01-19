@@ -24,7 +24,7 @@ public class PayController {
     @Reference(interfaceClass = PayService.class,retries = 1)
     private PayService payService;
 
-    @Value("http://localhost:8080/")
+    @Value("http://192.168.5.32:8080/")
     private String imgPre;
 
     @RequestMapping("getPayInfo")

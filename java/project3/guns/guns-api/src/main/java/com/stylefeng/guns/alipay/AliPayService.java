@@ -11,4 +11,6 @@ public interface AliPayService {
     String getPayQRCode(String orderId,String cinemaName,String price,String cinemaId);
 
     Integer getPayResult(String orderId);
+
+    boolean SendMessage(String userPhone,String duiHuanMa,String promoOrderId);
 }

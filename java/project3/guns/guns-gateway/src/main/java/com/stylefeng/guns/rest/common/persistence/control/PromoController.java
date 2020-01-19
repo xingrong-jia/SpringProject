@@ -2,6 +2,7 @@ package com.stylefeng.guns.rest.common.persistence.control;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.jiaxingrong.utils.StringTool;
+import com.stylefeng.guns.alipay.AliPayService;
 import com.stylefeng.guns.cinema.vo.CinemasReqVo;
 import com.stylefeng.guns.mq.MqService;
 import com.stylefeng.guns.promo.PromoService;
@@ -30,17 +31,18 @@ import java.util.List;
 @RequestMapping("promo")
 public class PromoController {
 
-    @Reference(interfaceClass = PromoService.class,retries = 1)
+    @Reference(interfaceClass = PromoService.class, retries = 1)
     private PromoService promoService;
 
-    @Reference(interfaceClass = UserService.class,retries = 1)
+    @Reference(interfaceClass = UserService.class, retries = 1)
     private UserService userService;
 
     @Autowired
     JwtTokenUtil jwtTokenUtil;
 
-    @Reference(interfaceClass = MqService.class,retries = 1)
+    @Reference(interfaceClass = MqService.class, retries = 1)
     private MqService mqService;
+
 
 
     @RequestMapping("getPromo")
@@ -66,7 +68,7 @@ public class PromoController {
         Integer userId = userService.queryUserId(username);
         String token = promoService.generateToken(promoId, userId);
         if (token == null) return Result.failure();
-        if (token.length() == 0 || "".equals(token)) return Result.statusIsOne("获取失败");
+        //if (token.length() == 0 || "".equals(token)) return Result.statusIsOne("获取失败");
         return Result.ok(token);
     }
 
@@ -84,7 +86,7 @@ public class PromoController {
         if (status == -3) return Result.statusIsOne("库存小于您购买的数量，请修改！");
         if (status == -2) return Result.statusIsOne("商品已经售空！");
         if (status == -1) return Result.statusIsOne("无秒杀令牌，请刷新尝试获取！");
-        if (status == 1){
+        if (status == 1) {
             Integer amount = reqVo.getAmount();
             Integer promoId = reqVo.getPromoId();
 /*            Boolean redisStock = mqService.sendRedisStock(promoId, amount);
@@ -94,15 +96,15 @@ public class PromoController {
 
             //Boolean mysqlStock = mqService.sendMysqlStock(promoId, amount, userId);
             Boolean mysqlStock = mqService.sendMysqlStockTransaction(promoId, amount, userId);
-            if (mysqlStock){
-                log.info("mysql-->活动Id:"+promoId+",售出:"+amount+",下单用户id："+userId);
+            if (mysqlStock) {
+                log.info("mysql-->活动Id:" + promoId + ",售出:" + amount + ",下单用户id：" + userId);
             }
         }
         //Thread.sleep(10);
         stopWatch.stop();
 
-        log.info("秒杀下单接口请求耗时 -> {} ms",stopWatch.getTotalTimeMillis());
-        return Result.ok("下单成功！");
+        log.info("秒杀下单接口请求耗时 -> {} ms", stopWatch.getTotalTimeMillis());
+        return Result.ok("下单成功,兑换码稍后已短信发送，您也可在我的订单中查询！");
     }
 
 }

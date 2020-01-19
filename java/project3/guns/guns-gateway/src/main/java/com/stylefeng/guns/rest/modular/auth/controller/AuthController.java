@@ -30,7 +30,7 @@ public class AuthController {
     private IReqValidator reqValidator;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
 
     @RequestMapping(value = "${jwt.auth-path}")
     public Result createAuthenticationToken(AuthRequest authRequest) {

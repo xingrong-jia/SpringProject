@@ -36,7 +36,7 @@ public class CinemaController {
         Map<String,Object> map = cinemaService.getCinemas(cinemasReqVo);
         if (map==null||map.size()==0) return new Result(999,"系统出现异常，请联系管理员!");
         List data = (List) map.get("data");
-        if (CollectionUtils.isEmpty(data)) return new Result(1,"影院信息查询失败!");
+        if (CollectionUtils.isEmpty(data)) return new Result(1,"影院信息查询失败,暂无该条件影院信息!");
         Integer nowPage = (Integer) map.get("nowPage");
         Integer totalPage = (Integer) map.get("totalPage");
         return Result.ok(data, nowPage, totalPage);

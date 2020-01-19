@@ -46,7 +46,7 @@ public class PromoConsumer {
     private String aliPayPic ;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object>redisTemplate;
 
 
     @Reference(interfaceClass = PromoService.class,retries = 1)

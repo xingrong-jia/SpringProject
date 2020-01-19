@@ -7,9 +7,11 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
+import com.jiaxingrong.utils.StringTool;
 import com.stylefeng.guns.alipay.AliPayService;
 import com.stylefeng.guns.mq.MqService;
 import com.stylefeng.guns.rest.alipay.demo.trade.Main;
+import com.stylefeng.guns.rest.config.AliyunConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +33,8 @@ public class AliPayServiceImpl implements AliPayService {
     @Reference(interfaceClass = MqService.class,retries = 1)
     private MqService mqService;
 
+    @Autowired
+    AliyunConfig aliyunConfig;
 
     @Override
     public String getPayQRCode(String orderId, String cinemaName, String price, String cinemaId) {
@@ -51,6 +55,13 @@ public class AliPayServiceImpl implements AliPayService {
             integer = 0;
         }
         return integer;
+    }
+
+    public boolean SendMessage(String userPhone,String duiHuanMa,String promoOrderId){
+        if (!StringTool.isNotNull(userPhone)) return false;
+        String message = "您已经秒杀成功，兑换码为"+duiHuanMa+",订单号为"+promoOrderId+",请在七天内到影院服务台兑换！";
+        aliyunConfig.sendMsg(userPhone,message);
+        return true;
     }
 
     private String queryPayResult(String orderId) {

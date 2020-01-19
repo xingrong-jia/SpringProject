@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.jiaxingrong.utils.CollectionUtils;
 import com.jiaxingrong.utils.DateUtils;
 import com.jiaxingrong.utils.StringTool;
+import com.stylefeng.guns.alipay.AliPayService;
 import com.stylefeng.guns.cinema.CinemaService;
 import com.stylefeng.guns.cinema.vo.CinemasReqVo;
 import com.stylefeng.guns.order.vo.OrderRespVo;
@@ -18,6 +19,8 @@ import com.stylefeng.guns.rest.common.persistence.dao.MtimePromoOrderMapper;
 import com.stylefeng.guns.rest.common.persistence.dao.MtimePromoStockMapper;
 import com.stylefeng.guns.rest.common.persistence.model.MtimePromo;
 import com.stylefeng.guns.rest.common.persistence.model.MtimePromoOrder;
+import com.stylefeng.guns.user.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,7 @@ import java.util.List;
  * @PROJECT_NAME: guns
  * @date 2020-01-13 8:56
  */
+@Slf4j
 @Component
 @Service(interfaceClass = PromoService.class)
 public class PromoServiceImpl implements PromoService {
@@ -55,11 +59,17 @@ public class PromoServiceImpl implements PromoService {
     @Reference(interfaceClass = CinemaService.class, retries = 1)
     private CinemaService cinemaService;
 
+    @Reference(interfaceClass = AliPayService.class, retries = 1)
+    private AliPayService aliPayService;
+
+    @Reference(interfaceClass = UserService.class, retries = 1)
+    private UserService userService;
+
     @Value("proms")
     private String proms;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Value("genToken")
     private String generateToken;
@@ -67,7 +77,7 @@ public class PromoServiceImpl implements PromoService {
     @Value("promoCount")
     private String promoCount;
 
-    private Integer suffix = 0000001;
+    private Integer suffix = 1000000;
 
     @Value("JXR")
     private String prefix;
@@ -100,7 +110,12 @@ public class PromoServiceImpl implements PromoService {
                 respVo.setPrice(mtimePromo.getPrice().intValue());
                 respVo.setStartTime(mtimePromo.getStartTime());
                 respVo.setStatus(mtimePromo.getStatus());
-                respVo.setStock(promoStock);
+                Integer stock = (Integer) redisTemplate.opsForValue().get(proms + mtimePromo.getUuid());
+                if (stock!=null) {
+                    respVo.setStock(stock);
+                }else {
+                    respVo.setStock(promoStock);
+                }
                 respVo.setUuid(mtimePromo.getUuid());
                 respVos.add(respVo);
             }
@@ -119,6 +134,8 @@ public class PromoServiceImpl implements PromoService {
         if (!CollectionUtils.isEmpty(promoRespVos)) {
             for (PromoRespVo promo : promoRespVos) {
                 redisTemplate.opsForValue().set(proms + promo.getUuid(), promo.getStock());
+                Integer stock = (Integer) redisTemplate.opsForValue().get(proms + promo.getUuid());
+                log.info(String.valueOf(stock));
                 int v = (int) (promo.getStock() * 1.5);
                 redisTemplate.opsForValue().set(promoCount+promo.getUuid(),v);
             }
@@ -211,6 +228,9 @@ public class PromoServiceImpl implements PromoService {
 
         Integer insert = orderMapper.insertPromoOrder(promoOrder);
 
+        String userPhone = userService.queryUserPhoneByUserId(userId);
+
+        aliPayService.SendMessage(userPhone,exchangeCode,getOrderId(userId));
         return insert;
     }
 
@@ -270,20 +290,14 @@ public class PromoServiceImpl implements PromoService {
         buffer.append(prefix);//3位
         String ctrl = StringTool.date2StringBeHmSNotCtrl(new Date());
         if ("000000".equals(ctrl.substring(7))) {
-            suffix = 0000001;
+            suffix = 1000000;
         }
         buffer.append(ctrl);
         String hashRSA = StringTool.hashRSA(String.valueOf(userId));
         String hashRSA1 = StringTool.hashRSA(String.valueOf(promoId));
         buffer.append(hashRSA.substring(hashRSA.length() - 6));
         buffer.append(hashRSA.substring(hashRSA1.length() - 6));
-        if (suffix < 1000000) {
-            String valueOf = String.valueOf(suffix);
-            int length = 7 - valueOf.length();
-            for (int i = 0; i < length; i++) {
-                buffer.append(0);
-            }
-        }
+
         buffer.append(suffix++);
         return buffer.toString();
     }

@@ -21,4 +21,7 @@ public interface UserService {
     UserInfoVo getUserInfo(String username);
 
     Integer queryUserId(String username);
+
+    String queryUserPhoneByUserId(Integer userId);
+
 }

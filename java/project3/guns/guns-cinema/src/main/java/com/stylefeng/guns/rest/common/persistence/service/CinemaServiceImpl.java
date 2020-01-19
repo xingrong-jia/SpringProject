@@ -62,7 +62,7 @@ public class CinemaServiceImpl implements CinemaService {
         if (cinemasReqVo.getHallType() != 99) {
             wrapper.like("hall_ids", "#" + cinemasReqVo.getHallType() + "#");
         }
-        if (cinemasReqVo.getDistrictId() != 99) {
+        if (cinemasReqVo.getAreaId() != 99) {
             eqMap.put("area_id", cinemasReqVo.getDistrictId());
         }
         wrapper.allEq(eqMap);
